@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Network Security PBQ: Home Network Configuration</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --border: #334155;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      background: #090d16;
+      color: #ffffff;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-title h1 { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.02em; }
+
+    .badge {
+      background: rgba(2, 132, 199, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(2, 132, 199, 0.4);
+      padding: 3px 8px;
+      font-weight: 800;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    /* Main PBQ Layout */
+    .pbq-layout {
+      display: flex;
+      flex: 1;
+      gap: 16px;
+      padding: 16px 20px;
+      overflow: hidden;
+    }
+
+    /* Left Sidebar */
+    .left-sidebar {
+      width: 310px;
+      min-width: 280px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      overflow-y: auto;
+    }
+
+    .panel-header {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 6px;
+    }
+
+    .scenario-box {
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: #f8fafc;
+      background-color: #0f172a;
+      border-left: 4px solid var(--primary);
+      padding: 12px;
+      border-radius: 0 4px 4px 0;
+      border: 1px solid #1e293b;
+      border-left-width: 4px;
+    }
+
+    .instructions-box {
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: #cbd5e1;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px;
+    }
+
+    /* Right Workspace Area */
+    .right-workspace {
+      flex: 1;
+      background: #050914;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+      overflow: hidden;
+    }
+
+    /* Stage Canvas */
+    .diagram-stage {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: #e2f1e8;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+
+    /* Vector SVG Canvas */
+    svg.network-diagram-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 10;
+    }
+
+    /* Callout Card Overlay Containers */
+    .callout-card {
+      position: absolute;
+      z-index: 30;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(4px);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1.5px solid #00b4d8;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .callout-card label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .callout-card select {
+      width: 185px;
+      padding: 5px 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      background-color: #0f172a;
+      color: #f8fafc;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .callout-card select:focus {
+      border-color: #38bdf8;
+    }
+
+    /* Percent Positions for Cards */
+    #card-wanIP          { top: 3%;   left: 50%; transform: translateX(-50%); }
+    #card-pfRule         { top: 32%;  left: 50%; transform: translateX(-50%); }
+    #card-encryption     { top: 16%;  left: 3%; }
+    #card-lanIPWAP       { top: 38%;  left: 3%; }
+    #card-lanDevice      { bottom: 6%; left: 8%; }
+    #card-lanIPFW        { top: 38%;  right: 3%; }
+    #card-screenedDevice { bottom: 6%; right: 8%; }
+
+    /* Connector Pointer Lines */
+    line.pointer-line {
+      stroke: #38bdf8;
+      stroke-width: 2.5;
+      stroke-dasharray: 5,3;
+    }
+
+    circle.pointer-dot {
+      fill: #0284c7;
+      stroke: #ffffff;
+      stroke-width: 2;
+    }
+
+    /* Footer Toolbar */
+    .footer-bar {
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 9px 22px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s ease;
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #334155; color: white; }
+    .btn-secondary:hover { background: #475569; }
+
+    /* Modal Evaluation Styling */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-backdrop.show { display: flex; }
+
+    .modal-box {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      width: 620px;
+      max-width: 92vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 22px;
+      box-shadow: 0 20px 30px rgba(0,0,0,0.6);
+    }
+
+    .modal-box h3 {
+      font-size: 1.05rem;
+      color: #f8fafc;
+      margin-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+
+    .explanation-item {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand-title">
+      <span class="badge">Performance Assessment</span>
+      <h1>Home Network & Port Forwarding Configuration Lab</h1>
+    </div>
+  </header>
+
+  <!-- Main Layout -->
+  <div class="pbq-layout">
+    
+    <!-- Left Sidebar Panel -->
+    <div class="left-sidebar">
+      <div class="panel-header">Customer Service Briefing</div>
+      <div class="scenario-box">
+        You are configuring a home network for a customer.<br><br>
+        The customer requests remote access to a Windows PC, while ensuring all chat and gaming functions operate smoothly on their Game Console.
+      </div>
+
+      <div class="panel-header" style="margin-top: 6px;">Evaluation Instructions</div>
+      <div class="instructions-box">
+        <strong>DIRECTIVES</strong><br><br>
+        1. Examine the home network topology diagram.<br><br>
+        2. Assign valid IP addresses, wireless encryption types, port forwarding rules, and device zones using the dropdown menus.<br><br>
+        3. Each selection can only be used once where applicable.
+      </div>
+    </div>
+
+    <!-- Right Workspace Area -->
+    <div class="right-workspace">
+      <div class="diagram-stage" id="diagramStage">
+
+        <!-- Responsive Network Diagram SVG -->
+        <svg class="network-diagram-svg" id="svgStage">
+          <defs>
+            <linearGradient id="cloudFill" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="100%" stop-color="#0284c7"/>
+            </linearGradient>
+            <filter id="shadow">
+              <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.15"/>
+            </filter>
+          </defs>
+
+          <!-- Core Network Trunk Connections -->
+          <line x1="50%" y1="18%" x2="50%" y2="52%" stroke="#1e3a8a" stroke-width="5"/>
+          <line x1="25%" y1="52%" x2="75%" y2="52%" stroke="#1e3a8a" stroke-width="5"/>
+
+          <!-- Internal LAN Circle Zone -->
+          <g filter="url(#shadow)">
+            <circle cx="25%" cy="65%" r="120" fill="none" stroke="#1e3a8a" stroke-width="4"/>
+            <text x="25%" y="81%" text-anchor="middle" font-size="18" font-weight="900" fill="#1e3a8a">LAN</text>
+          </g>
+
+          <!-- Screened Subnet Circle Zone (DMZ) -->
+          <g filter="url(#shadow)">
+            <circle cx="75%" cy="65%" r="120" fill="none" stroke="#1e3a8a" stroke-width="4"/>
+            <text x="75%" y="81%" text-anchor="middle" font-size="18" font-weight="900" fill="#1e3a8a">Screened subnet</text>
+          </g>
+
+          <!-- Cloud / Internet Node -->
+          <g id="node-internet" filter="url(#shadow)">
+            <path d="M -45 -15 A 24 24 0 0 1 -10 -37 A 32 32 0 0 1 40 -27 A 28 28 0 0 1 60 -3 A 24 24 0 0 1 35 20 L -40 20 A 24 24 0 0 1 -45 -15 Z" fill="url(#cloudFill)" transform="translate(0, 0)"/>
+            <text x="0" y="42" text-anchor="middle" font-size="18" font-weight="900" fill="#1e3a8a">Internet</text>
+          </g>
+
+          <!-- Central Router Node -->
+          <g id="node-router" filter="url(#shadow)">
+            <ellipse cx="0" cy="0" rx="48" ry="24" fill="#3b82f6" stroke="#1d4ed8" stroke-width="2.5"/>
+            <path d="M -30 0 L 30 0 M 0 -16 L 0 16 M -16 -10 L 16 10 M -16 10 L 16 -10" stroke="#ffffff" stroke-width="2.5"/>
+            <text x="0" y="48" text-anchor="middle" font-size="18" font-weight="900" fill="#1e3a8a">Router</text>
+          </g>
+
+          <!-- WAP Device Node -->
+          <g id="node-wap" filter="url(#shadow)">
+            <rect x="-50" y="-20" width="100" height="40" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="2.5"/>
+            <line x1="-25" y1="-20" x2="-32" y2="-43" stroke="#334155" stroke-width="3"/>
+            <line x1="25" y1="-20" x2="32" y2="-43" stroke="#334155" stroke-width="3"/>
+            <circle cx="38" cy="0" r="4" fill="#22c55e"/>
+          </g>
+
+          <!-- Firewall Device Node -->
+          <g id="node-firewall" filter="url(#shadow)">
+            <rect x="-50" y="-30" width="100" height="60" rx="5" fill="#1e3a8a" stroke="#0f172a" stroke-width="2.5"/>
+            <path d="M -45 -15 H 45 M -45 0 H 45 M -45 15 H 45 M -15 -30 V -15 M 15 -15 V 0 M -25 0 V 15 M 25 0 V 15" stroke="#ffffff" stroke-width="2"/>
+          </g>
+
+          <!-- LAN Device Node -->
+          <g id="node-lan-device"></g>
+
+          <!-- DMZ Device Node -->
+          <g id="node-dmz-device"></g>
+
+          <!-- Dynamic Connecting Lines & Target Dots -->
+          <line id="line-wanIP" class="pointer-line"/>
+          <circle id="dot-wanIP" class="pointer-dot" r="5"/>
+
+          <line id="line-pfRule" class="pointer-line"/>
+          <circle id="dot-pfRule" class="pointer-dot" r="5"/>
+
+          <line id="line-encryption" class="pointer-line"/>
+          <circle id="dot-encryption" class="pointer-dot" r="5"/>
+
+          <line id="line-lanIPWAP" class="pointer-line"/>
+          <circle id="dot-lanIPWAP" class="pointer-dot" r="5"/>
+
+          <line id="line-lanIPFW" class="pointer-line"/>
+          <circle id="dot-lanIPFW" class="pointer-dot" r="5"/>
+
+          <line id="line-lanDevice" class="pointer-line"/>
+          <circle id="dot-lanDevice" class="pointer-dot" r="5"/>
+
+          <line id="line-screenedDevice" class="pointer-line"/>
+          <circle id="dot-screenedDevice" class="pointer-dot" r="5"/>
+        </svg>
+
+        <!-- Callout Overlay Cards -->
+        <div class="callout-card" id="card-wanIP">
+          <label>Select WAN IP</label>
+          <select id="wanIP"></select>
+        </div>
+
+        <div class="callout-card" id="card-pfRule">
+          <label>Port Forwarding Rule</label>
+          <select id="pfRule"></select>
+        </div>
+
+        <div class="callout-card" id="card-encryption">
+          <label>WAP Encryption Type</label>
+          <select id="encryptionSelect"></select>
+        </div>
+
+        <div class="callout-card" id="card-lanIPWAP">
+          <label>WAP LAN IP</label>
+          <select id="lanIPWAP"></select>
+        </div>
+
+        <div class="callout-card" id="card-lanDevice">
+          <label>LAN Host Device</label>
+          <select id="lanDevice"></select>
+        </div>
+
+        <div class="callout-card" id="card-lanIPFW">
+          <label>Firewall LAN IP</label>
+          <select id="lanIPFW"></select>
+        </div>
+
+        <div class="callout-card" id="card-screenedDevice">
+          <label>Screened Subnet Host</label>
+          <select id="screenedDevice"></select>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer Toolbar -->
+  <div class="footer-bar">
+    <button class="btn btn-secondary" onclick="resetPBQ()">Reset All</button>
+    <button class="btn btn-primary" onclick="submitPBQ()">Submit Evaluation</button>
+  </div>
+
+  <!-- Evaluation Modal -->
+  <div class="modal-backdrop" id="resultsModal">
+    <div class="modal-box">
+      <h3>Assessment Evaluation Results</h3>
+      <div id="scoreHeader" style="font-size: 1.05rem; font-weight: bold; margin-bottom: 10px;"></div>
+      <div id="evaluationLog"></div>
+      <div style="text-align: right; margin-top: 18px;">
+        <button class="btn btn-primary" onclick="closeModal()">Close Evaluation</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dynamic Coordinate Tracking Engine
+    function updateDynamicConnectors() {
+      const stage = document.getElementById("diagramStage").getBoundingClientRect();
+      const svg = document.getElementById("svgStage");
+
+      // Position Node Elements inside SVG percentage relative coordinates
+      const w = stage.width;
+      const h = stage.height;
+
+      document.getElementById("node-internet").setAttribute("transform", `translate(${w * 0.5}, ${h * 0.18})`);
+      document.getElementById("node-router").setAttribute("transform", `translate(${w * 0.5}, ${h * 0.52})`);
+      document.getElementById("node-wap").setAttribute("transform", `translate(${w * 0.25}, ${h * 0.52})`);
+      document.getElementById("node-firewall").setAttribute("transform", `translate(${w * 0.75}, ${h * 0.52})`);
+
+      const connectors = [
+        { cardId: "card-wanIP", targetX: w * 0.5, targetY: h * 0.18 + 15, lineId: "line-wanIP", dotId: "dot-wanIP" },
+        { cardId: "card-pfRule", targetX: w * 0.5, targetY: h * 0.52 - 30, lineId: "line-pfRule", dotId: "dot-pfRule" },
+        { cardId: "card-encryption", targetX: w * 0.25 - 30, targetY: h * 0.52 - 25, lineId: "line-encryption", dotId: "dot-encryption" },
+        { cardId: "card-lanIPWAP", targetX: w * 0.25, targetY: h * 0.52 + 20, lineId: "line-lanIPWAP", dotId: "dot-lanIPWAP" },
+        { cardId: "card-lanIPFW", targetX: w * 0.75, targetY: h * 0.52 + 32, lineId: "line-lanIPFW", dotId: "dot-lanIPFW" },
+        { cardId: "card-lanDevice", targetX: w * 0.25, targetY: h * 0.65, lineId: "line-lanDevice", dotId: "dot-lanDevice" },
+        { cardId: "card-screenedDevice", targetX: w * 0.75, targetY: h * 0.65, lineId: "line-screenedDevice", dotId: "dot-screenedDevice" }
+      ];
+
+      connectors.forEach(c => {
+        const card = document.getElementById(c.cardId).getBoundingClientRect();
+        const line = document.getElementById(c.lineId);
+        const dot = document.getElementById(c.dotId);
+
+        // Center point of the card relative to stage canvas
+        const cardX = (card.left + card.width / 2) - stage.left;
+        const cardY = (card.top + card.height / 2) - stage.top;
+
+        line.setAttribute("x1", cardX);
+        line.setAttribute("y1", cardY);
+        line.setAttribute("x2", c.targetX);
+        line.setAttribute("y2", c.targetY);
+
+        dot.setAttribute("cx", c.targetX);
+        dot.setAttribute("cy", c.targetY);
+      });
+    }
+
+    // Option Pools
+    const encOptions = ["TLS 1.2", "WPA2 PSK", "L2TP IPSec", "WPA2 Enterprise"];
+    const ipPool = ["169.254.17.1", "224.0.0.1", "50.90.234.1", "127.1.0.1", "192.168.10.1", "10.100.0.1"];
+    const pfOptions = ["Allow TCP Any 3347", "Allow TCP Any 3306", "Allow TCP Any 25", "Allow TCP Any 23", "Allow TCP Any 3389"];
+    const deviceOptions = ["Game Console", "Windows PC"];
+
+    // Answer Key
+    const correctAnswers = {
+      encryptionSelect: "WPA2 PSK",
+      lanIPWAP: "192.168.10.1",
+      wanIP: "50.90.234.1",
+      lanIPFW: "10.100.0.1",
+      pfRule: "Allow TCP Any 3389",
+      lanDevice: "Game Console",
+      screenedDevice: "Windows PC"
+    };
+
+    const explanations = {
+      encryptionSelect: "WPA2 PSK is the standard secure choice for home wireless networks. WPA2 Enterprise requires a RADIUS server, L2TP is a VPN tunneling protocol, and TLS is not used for Wi-Fi authentication.",
+      lanIPWAP: "192.168.10.1 is a valid private IP suitable for internal LAN interfaces like a WAP. APIPA (169.254.x.x) and Loopback (127.x.x.x) addresses are invalid.",
+      wanIP: "50.90.234.1 is a routable public IP address required for WAN (internet-facing) router interfaces.",
+      lanIPFW: "10.100.0.1 is a valid private Class A IP address suitable for a secondary internal firewall interface.",
+      pfRule: "Allow TCP Any 3389 opens Remote Desktop Protocol (RDP) to grant remote access to the Windows PC.",
+      lanDevice: "The Game Console belongs on the internal LAN behind NAT to enable UPnP and open multiplayer functionality.",
+      screenedDevice: "The Windows PC belongs in the Screened Subnet (DMZ) so it can be exposed safely for remote desktop access without risking the internal LAN."
+    };
+
+    function shuffle(array) {
+      let arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function populateSelect(id, options) {
+      const select = document.getElementById(id);
+      select.innerHTML = '<option disabled selected value="">-- Select --</option>';
+      shuffle(options).forEach(optText => {
+        const opt = document.createElement("option");
+        opt.value = optText;
+        opt.textContent = optText;
+        select.appendChild(opt);
+      });
+    }
+
+    function initLab() {
+      populateSelect("encryptionSelect", encOptions);
+      populateSelect("lanIPWAP", ipPool);
+      populateSelect("wanIP", ipPool);
+      populateSelect("lanIPFW", ipPool);
+      populateSelect("pfRule", pfOptions);
+      populateSelect("lanDevice", deviceOptions);
+      populateSelect("screenedDevice", deviceOptions);
+
+      setTimeout(updateDynamicConnectors, 50);
+    }
+
+    function resetPBQ() {
+      initLab();
+      closeModal();
+    }
+
+    function closeModal() {
+      document.getElementById("resultsModal").classList.remove("show");
+    }
+
+    function submitPBQ() {
+      let score = 0;
+      const totalPoints = Object.keys(correctAnswers).length;
+      let logs = [];
+
+      const calloutNames = {
+        encryptionSelect: "WAP Encryption Type",
+        lanIPWAP: "WAP LAN IP Address",
+        wanIP: "Router WAN IP Address",
+        lanIPFW: "Firewall LAN IP Address",
+        pfRule: "Port Forwarding Rule",
+        lanDevice: "Internal LAN Host",
+        screenedDevice: "Screened Subnet Host"
+      };
+
+      Object.keys(correctAnswers).forEach(id => {
+        const select = document.getElementById(id);
+        const actual = select ? select.value : "";
+        const expected = correctAnswers[id];
+
+        if (actual === expected) {
+          score++;
+        } else {
+          logs.push(`
+            <div class="explanation-item">
+              <strong>${calloutNames[id]}:</strong> Selected <code>${actual || 'Unselected'}</code> (Expected: <strong>${expected}</strong>).<br>
+              ${explanations[id]}
+            </div>
+          `);
+        }
+      });
+
+      const scoreHeader = document.getElementById("scoreHeader");
+      const evalLog = document.getElementById("evaluationLog");
+
+      scoreHeader.textContent = `Assessment Score: ${score} / ${totalPoints}`;
+      scoreHeader.style.color = score === totalPoints ? "var(--success)" : "var(--danger)";
+
+      if (score === totalPoints) {
+        evalLog.innerHTML = `<p style="color:var(--success); font-weight:bold; margin-bottom:12px;">Outstanding Engineering Configuration! All IP assignments, encryption modes, and port forwarding rules are correct.</p>`;
+      } else {
+        evalLog.innerHTML = logs.join("");
+      }
+
+      document.getElementById("resultsModal").classList.add("show");
+    }
+
+    window.onload = function() {
+      initLab();
+      window.addEventListener("resize", updateDynamicConnectors);
+    };
+  </script>
+</body>
+</html>
